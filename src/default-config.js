@@ -1,4 +1,6 @@
-import { lovelace } from './ha-elements';
+import { getLovelace } from 'custom-card-helpers';
+
+const lovelace = getLovelace();
 
 const getThemeVar = themeVar => {
   return getComputedStyle(document.body).getPropertyValue(themeVar);
@@ -60,6 +62,7 @@ export const defaultConfig = () => {
     hide_refresh: false,
     hide_config: false,
     hide_raw: false,
+    hide_ch_settings: false,
 
     // Custom CSS
     tabs_css: [],

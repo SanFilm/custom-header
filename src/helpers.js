@@ -1,5 +1,9 @@
 import { defaultVariables } from './template-variables';
-import { haElem, lovelace, hass } from './ha-elements';
+import { ha_elements } from './ha-elements';
+
+const haElem = ha_elements();
+const lovelace = haElem.lovelace;
+const hass = haElem.hass;
 
 Object.defineProperty(Array.prototype, 'flat', {
   value: function(depth = 1) {

@@ -1,19 +1,23 @@
-import { root } from './ha-elements';
-import { header } from './build-header';
+import { ha_elements } from './ha-elements';
 import { tabIndexByName } from './helpers';
 
-export const insertStyleTags = config => {
+export const insertStyleTags = (config, ch) => {
+  const root = document
+    .querySelector('home-assistant')
+    .shadowRoot.querySelector('home-assistant-main')
+    .shadowRoot.querySelector('ha-panel-lovelace')
+    .shadowRoot.querySelector('hui-root').shadowRoot;
   let headerHeight = 48;
-  const headerType = config.split_mode ? header.bottom : header;
+  const headerType = config.split_mode ? ch.footer : ch.header;
   if (!config.compact_mode) {
     if (config.reverse_button_direction) {
-      header.container.querySelector('#contentContainer').dir = 'ltr';
-      header.container.querySelector('#contentContainer').style.textAlign = 'right';
+      ch.header.container.querySelector('#ch-content-container').dir = 'ltr';
+      ch.header.container.querySelector('#ch-content-container').style.textAlign = 'right';
     } else {
-      header.container.querySelector('#contentContainer').style.textAlign = '';
-      header.container.querySelector('#contentContainer').dir = '';
+      ch.header.container.querySelector('#ch-content-container').style.textAlign = '';
+      ch.header.container.querySelector('#ch-content-container').dir = '';
     }
-    header.container.querySelector('#contentContainer').innerHTML = config.header_text;
+    ch.header.container.querySelector('#ch-content-container').innerHTML = config.header_text;
     headerHeight = headerType.tabs.length ? 96 : 48;
   }
 
@@ -43,7 +47,7 @@ export const insertStyleTags = config => {
             : ''
         }
       }
-      ch-header-bottom {
+      ch-footer {
         z-index: 99;
         padding-left: 10px;
         padding-right: 10px;
@@ -75,7 +79,7 @@ export const insertStyleTags = config => {
         margin-right: 9px;
         ${config.stack_css ? config.stack_css : ''}
       }
-      #contentContainer {
+      #ch-content-container {
         padding: 12px 6px 12px 6px;
         ${config.compact_mode ? 'display: none;' : ''}
         ${
@@ -224,8 +228,8 @@ export const insertStyleTags = config => {
   headerType.tabContainer.shadowRoot.appendChild(style);
   if (currentStyle) currentStyle.remove();
 
-  currentStyle = header.bottom.querySelector('paper-tabs').shadowRoot.querySelector('#ch_chevron');
-  header.bottom.querySelector('paper-tabs').shadowRoot.appendChild(style.cloneNode(true));
+  currentStyle = ch.footer.tabContainer.shadowRoot.querySelector('#ch_chevron');
+  ch.footer.tabContainer.shadowRoot.appendChild(style.cloneNode(true));
   if (currentStyle) currentStyle.remove();
 
   style = document.createElement('style');

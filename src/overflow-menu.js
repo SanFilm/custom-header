@@ -1,8 +1,10 @@
 import './editor';
-import { header } from './build-header';
-import { root, lovelace, haElem } from './ha-elements';
+import { ha_elements } from './ha-elements';
 
-export const hideMenuItems = (config, header, editMode) => {
+const haElem = ha_elements();
+const lovelace = haElem.lovelace;
+
+export const hideMenuItems = (config, header, edit_mode) => {
   const localized = (item, string) => {
     let localString;
     const hass = document.querySelector('home-assistant').hass;
@@ -11,15 +13,7 @@ export const hideMenuItems = (config, header, editMode) => {
     else localString = hass.localize(`ui.panel.lovelace.menu.${string}`);
     return item.innerHTML.includes(localString) || item.getAttribute('aria-label') == localString;
   };
-  (!editMode
-    ? header.options
-    : document
-        .querySelector('home-assistant')
-        .shadowRoot.querySelector('home-assistant-main')
-        .shadowRoot.querySelector('ha-panel-lovelace')
-        .shadowRoot.querySelector('hui-root')
-        .shadowRoot.querySelector('app-toolbar > paper-menu-button')
-  )
+  (edit_mode ? ha_elements().options : header.options)
     .querySelector('paper-listbox')
     .querySelectorAll('paper-item')
     .forEach(item => {
@@ -62,7 +56,7 @@ export const buttonToOverflow = (item, mdiIcon, header, config) => {
 
 const showEditor = () => {
   window.scrollTo(0, 0);
-  if (!root.querySelector('ha-app-layout editor')) {
+  if (!haElem.root.querySelector('ha-app-layout editor')) {
     const container = document.createElement('editor');
     const nest = document.createElement('div');
     nest.style.cssText = `
@@ -81,17 +75,17 @@ const showEditor = () => {
       z-index: 100;
       padding: 5px;
     `;
-    root.querySelector('ha-app-layout').insertBefore(container, root.querySelector('#view'));
+    haElem.root.querySelector('ha-app-layout').insertBefore(container, haElem.root.querySelector('#view'));
     container.appendChild(nest);
     nest.appendChild(document.createElement('custom-header-editor'));
   }
 };
 
-export const insertSettings = () => {
+export const insertSettings = (header, config) => {
   function insertAfter(el, referenceNode) {
     referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
   }
-  if (lovelace.mode === 'storage') {
+  if (lovelace.mode === 'storage' && !config.hide_ch_settings) {
     const chSettings = document.createElement('paper-item');
     chSettings.setAttribute('id', 'ch_settings');
     chSettings.addEventListener('click', () => showEditor());

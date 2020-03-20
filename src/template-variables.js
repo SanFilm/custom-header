@@ -1,5 +1,7 @@
-import { hass } from './ha-elements';
+import { ha_elements } from './ha-elements';
 import { getLovelace } from 'custom-card-helpers';
+
+const hass = ha_elements().hass;
 
 // deviceID taken directly from https://github.com/thomasloven/lovelace-card-tools
 const _deviceID = () => {

@@ -1,9 +1,11 @@
 import { LitElement, html } from 'lit-element';
 import { defaultConfig } from './default-config';
 import { getLovelace, fireEvent } from 'custom-card-helpers';
-import { hass } from './ha-elements';
+import { ha_elements } from './ha-elements';
 import { localize } from './localize/localize';
 import { deviceID } from './template-variables';
+
+const hass = ha_elements().hass;
 
 export class CustomHeaderEditor extends LitElement {
   static get properties() {

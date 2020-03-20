@@ -1,5 +1,8 @@
-import { haElem, root } from './ha-elements';
 import { tabIndexByName } from './helpers';
+import { ha_elements } from './ha-elements';
+
+const haElem = ha_elements();
+const root = haElem.root;
 
 // Kiosk mode is used to hide sidebar only as well.
 export const kioskMode = (sidebarOnly, headerOnly, config) => {
@@ -58,13 +61,13 @@ export const kioskMode = (sidebarOnly, headerOnly, config) => {
     haElem.drawer.style.display = 'none';
 
     // Style sidebar to close immediately and prevent opening.
-    if (!haElem.sidebar.main.shadowRoot.querySelector('#ch_sidebar_style')) {
+    if (!haElem.sidebar.main.querySelector('#ch_sidebar_style')) {
       style = document.createElement('style');
       style.setAttribute('id', 'ch_sidebar_style');
       style.innerHTML = ':host(:not([expanded])) {width: 0px !important;}';
       haElem.sidebar.main.shadowRoot.appendChild(style);
     }
-    if (!haElem.main.shadowRoot.querySelector('#ch_sidebar_style')) {
+    if (!haElem.main.querySelector('#ch_sidebar_style')) {
       style = document.createElement('style');
       style.setAttribute('id', 'ch_sidebar_style');
       style.innerHTML = ':host {--app-drawer-width: 0px !important;}';
@@ -76,9 +79,9 @@ export const kioskMode = (sidebarOnly, headerOnly, config) => {
 
 export const removeKioskMode = () => {
   haElem.drawer.style.display = '';
-  let style = haElem.main.shadowRoot.querySelector('#ch_sidebar_style');
+  let style = haElem.main.querySelector('#ch_sidebar_style');
   if (style) style.remove();
-  style = haElem.sidebar.main.shadowRoot.querySelector('#ch_sidebar_style');
+  style = haElem.sidebar.main.querySelector('#ch_sidebar_style');
   if (style) style.remove();
   haElem.drawer.style.display = '';
 };

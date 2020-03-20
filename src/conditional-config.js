@@ -1,10 +1,11 @@
-import { hass } from './ha-elements';
+import { ha_elements } from './ha-elements';
 import { tabIndexByName } from './helpers';
 import { deviceID } from './template-variables';
 import { getLovelace } from 'custom-card-helpers';
 import { processTabArray } from './helpers';
 
 export const conditionalConfig = config => {
+  const hass = ha_elements().hass;
   const lovelace = getLovelace();
   const countMatches = conditions => {
     const userVars = {

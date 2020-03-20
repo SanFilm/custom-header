@@ -1,5 +1,7 @@
 import { tabIndexByName } from './helpers';
-import { haElem } from './ha-elements';
+import { ha_elements } from './ha-elements';
+
+const haElem = ha_elements();
 
 export const redirects = (config, header) => {
   // Change link of "overview" item in sidebar to a visible tab or default tab.
