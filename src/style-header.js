@@ -5,15 +5,19 @@ import { menuButtonObservers } from './menu-observers';
 import { insertStyleTags } from './style-tags';
 import { redirects } from './redirects';
 import { fireEvent } from 'custom-card-helpers';
+import { selectTab } from './observers';
 
 export const styleHeader = (config, ch, haElem) => {
-  insertSettings(ch.header, config);
+  insertSettings(ch.header, config, haElem);
+  insertSettings(ch.header, config, haElem);
 
   if (window.location.href.includes('disable_ch')) config.disabled_mode = true;
   if (config.disabled_mode) {
     window.customHeaderDisabled = true;
-    removeKioskMode();
+    removeKioskMode(haElem);
+    haElem.appHeader.style.display = '';
     if (ch.header.container) ch.header.container.style.visibility = 'hidden';
+    if (ch.footer.container) ch.footer.container.style.visibility = 'hidden';
     if (haElem.root.querySelector('#ch_header_style')) haElem.root.querySelector('#ch_header_style').remove();
     if (haElem.root.querySelector('#ch_view_style')) haElem.root.querySelector('#ch_view_style').remove();
     if (ch.header.tabContainer.shadowRoot.querySelector('#ch_chevron')) {
@@ -29,10 +33,19 @@ export const styleHeader = (config, ch, haElem) => {
     return;
   } else {
     window.customHeaderDisabled = false;
-    hideMenuItems(config, ch.header, false);
+    hideMenuItems(config, ch.header, false, haElem);
     ch.header.menu.style.display = '';
     if (ch.header.container) ch.header.container.style.visibility = 'visible';
-    insertSettings(ch.header, config);
+    if (ch.footer.container) ch.footer.container.style.visibility = 'visible';
+    // insertSettings(ch.header, config);
+  }
+
+  if (!config.compact_mode && !config.button_scroll) {
+    ch.header.tabContainer.style.display = 'none';
+    ch.footer.container.style.display = '';
+  } else {
+    ch.header.tabContainer.style.display = '';
+    ch.footer.container.style.display = 'none';
   }
 
   if (config.split_mode) {
@@ -40,12 +53,14 @@ export const styleHeader = (config, ch, haElem) => {
     config.compact_mode = false;
     if (config.footer_mode) ch.footer.container.setAttribute('slot', 'header');
     else ch.footer.container.setAttribute('slot', '');
-  } else {
-    ch.footer.container.style.display = 'none';
+  } else if (!config.footer_mode) {
+    ch.footer.container.setAttribute('slot', 'header');
+  } else if (config.footer_mode) {
+    ch.footer.container.setAttribute('slot', '');
   }
 
-  const headerType = config.split_mode ? ch.footer : ch.header;
-  if (!config.split_mode) ch.footer.container.style.display = 'none';
+  const headerType = config.compact_mode || config.button_scroll ? ch.header : ch.footer;
+  // if (!config.split_mode) ch.footer.container.style.display = 'none';
 
   if (!ch.header.tabs.length) config.compact_mode = false;
 
@@ -79,16 +94,16 @@ export const styleHeader = (config, ch, haElem) => {
 
   // Disable sidebar or style it to fit header's new sizing/placement.
   if (config.kiosk_mode && !config.disabled_mode) {
-    insertStyleTags(config, ch);
-    kioskMode(false, false, config);
+    insertStyleTags(config, ch, haElem);
+    kioskMode(haElem, false, false, config);
   } else if (config.disable_sidebar) {
-    kioskMode(true, false, config);
-    insertStyleTags(config, ch);
+    kioskMode(haElem, true, false, config);
+    insertStyleTags(config, ch, haElem);
   } else if (config.hide_header) {
-    insertStyleTags(config, ch);
-    kioskMode(false, true, config);
+    insertStyleTags(config, ch, haElem);
+    kioskMode(haElem, false, true, config);
   } else if (!config.disable_sidebar && !config.kiosk_mode && !config.hide_header) {
-    removeKioskMode();
+    removeKioskMode(haElem);
     if (config.compact_mode && !config.footer_mode) {
       haElem.sidebar.main.querySelector('.menu').style = 'height:49px;';
       haElem.sidebar.main.querySelector('paper-listbox').style = 'height:calc(100% - 175px);';
@@ -106,7 +121,7 @@ export const styleHeader = (config, ch, haElem) => {
       haElem.sidebar.main.querySelector('paper-listbox').style = '';
       haElem.sidebar.main.querySelector('div.divider').style = '';
     }
-    insertStyleTags(config, ch);
+    insertStyleTags(config, ch, haElem);
   }
 
   // Remove chevrons.
@@ -199,18 +214,19 @@ export const styleHeader = (config, ch, haElem) => {
 
   if (!headerType.tabs.length) headerType.tabContainer.style.display = 'none';
 
-  menuButtonObservers(config, ch.header, haElem);
+  menuButtonObservers(config, ch, haElem);
 
-  if (!window.customHeaderShrink && !config.split_mode) {
+  if (!window.customHeaderShrink && !config.split_mode && !config.footer_mode) {
     window.customHeaderShrink = true;
     window.addEventListener('scroll', function(e) {
       const compact_mode =
-        window.getComputedStyle(ch.header.container.querySelector('#contentContainer')).getPropertyValue('display') ===
-        'none';
+        window
+          .getComputedStyle(ch.header.container.querySelector('#ch-content-container'))
+          .getPropertyValue('display') === 'none';
       const footer_mode = window.getComputedStyle(ch.header.container).getPropertyValue('bottom') === '0px';
       if (footer_mode || compact_mode) {
         return;
-      } else {
+      } else if (config.button_scroll) {
         if (window.scrollY > 48) {
           ch.header.container.style.top = '-48px';
           ch.header.menu.style.marginTop = '48px';
@@ -227,13 +243,21 @@ export const styleHeader = (config, ch, haElem) => {
           ch.header.options.style.marginTop = `${window.scrollY}px`;
         }
         ch.header.container.style.transition = '';
+      } else {
+        if (window.scrollY > 48) {
+          ch.header.container.style.top = '-48px';
+        } else {
+          ch.header.container.style.transition = '0s';
+          ch.header.container.style.top = `-${window.scrollY}px`;
+        }
+        ch.header.container.style.transition = '';
       }
     });
   }
 
   const shadowScroll = () => {
-    if (window.scrollY > 15) ch.header.container.style.boxShadow = '0px 0px 5px 5px rgba(0,0,0,0.2)';
-    else ch.header.container.style.boxShadow = '0px 0px 5px 5px rgba(0,0,0,0)';
+    if (window.scrollY > 15) ch.footer.container.style.boxShadow = '0px 0px 5px 5px rgba(0,0,0,0.2)';
+    else ch.footer.container.style.boxShadow = '0px 0px 5px 5px rgba(0,0,0,0)';
   };
 
   if (!window.customHeaderShadow && !config.footer_mode && !config.split_mode && config.shadow) {
@@ -244,6 +268,6 @@ export const styleHeader = (config, ch, haElem) => {
   }
 
   fireEvent(ch.header.container, 'iron-resize');
-  redirects(config, ch.header);
-  // selectTab(config, ch);
+  redirects(config, ch);
+  selectTab(config, ch);
 };

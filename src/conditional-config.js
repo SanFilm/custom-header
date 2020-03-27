@@ -35,7 +35,7 @@ export const conditionalConfig = config => {
         (cond == 'is_admin' && conditions[cond] == hass.user.is_admin) ||
         (cond == 'is_owner' && conditions[cond] == hass.user.is_owner) ||
         (cond == 'template' && conditions[cond]) ||
-        (lovelace && cond == 'tab' && tabIndexByName(conditions[cond]) == lovelace.current_view)
+        (lovelace && cond == 'tab' && tabIndexByName(conditions[cond], lovelace) == lovelace.current_view)
       ) {
         count++;
       } else {

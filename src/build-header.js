@@ -1,9 +1,7 @@
-import { ha_elements } from './ha-elements';
-
 export class CustomHeader {
-  constructor() {
-    if (!ha_elements()) return;
-    this.ha_elem = ha_elements();
+  constructor(ha_elements) {
+    if (!ha_elements) return;
+    this.ha_elem = ha_elements;
     const header = this.ha_elem.appLayout.querySelector('ch-header');
     const footer = this.ha_elem.appLayout.querySelector('ch-footer');
     if (header) {
@@ -34,6 +32,7 @@ export class CustomHeader {
     const header = {};
     header.tabContainer = document.createElement('paper-tabs');
     header.tabContainer.setAttribute('dir', 'ltr');
+    header.tabContainer.setAttribute('scrollable', '');
     header.tabContainer.style.width = '100%';
     header.tabContainer.style.marginLeft = '0';
 
@@ -48,15 +47,15 @@ export class CustomHeader {
 
     header.tabs = header.tabContainer.querySelectorAll('paper-tab');
 
-    this.cloneButton('menu', 'mdi:menu', ha_elements(), header);
-    this.cloneButton('voice', 'mdi:microphone', ha_elements(), header);
-    this.cloneButton('options', 'mdi:dots-vertical', ha_elements(), header);
-
     const stack = document.createElement('ch-stack');
     const contentContainer = document.createElement('div');
     contentContainer.setAttribute('id', 'ch-content-container');
-
     header.container = document.createElement('ch-header');
+
+    this.cloneButton('menu', 'mdi:menu', header);
+    this.cloneButton('voice', 'mdi:microphone', header);
+    this.cloneButton('options', 'mdi:dots-vertical', header);
+
     header.container.appendChild(header.menu);
     header.container.appendChild(stack);
     header.stack = header.container.querySelector('ch-stack');
@@ -76,6 +75,7 @@ export class CustomHeader {
 
     footer.tabContainer = document.createElement('paper-tabs');
     footer.tabContainer.setAttribute('dir', 'ltr');
+    footer.tabContainer.setAttribute('scrollable', '');
     footer.tabContainer.style.width = '100%';
     footer.tabContainer.style.marginLeft = '0';
 
@@ -97,22 +97,22 @@ export class CustomHeader {
     return footer;
   }
 
-  cloneButton(button, icon, ha_elements, header) {
+  cloneButton(button, icon, header) {
     if (button === 'options') {
-      header[button] = ha_elements[button].cloneNode(true);
+      header[button] = this.ha_elem[button].cloneNode(true);
       header[button].removeAttribute('horizontal-offset');
       header[button].querySelector('paper-icon-button').style.height = '48px';
       const items = Array.from(header[button].querySelectorAll('paper-item'));
       items.forEach(item => {
         const index = items.indexOf(item);
-        this.tapOrClick(item, ha_elements[button].querySelectorAll('paper-item')[index]);
+        this.tapOrClick(item, this.ha_elem[button].querySelectorAll('paper-item')[index]);
       });
     } else {
-      if (!ha_elements[button]) return;
+      if (!this.ha_elem[button]) return;
       header[button] = document.createElement('paper-icon-button');
       this.tapOrClick(
         header[button],
-        ha_elements[button].shadowRoot.querySelector('paper-icon-button') || ha_elements[button],
+        this.ha_elem[button].shadowRoot.querySelector('paper-icon-button') || this.ha_elem[button],
       );
     }
 
@@ -126,8 +126,8 @@ export class CustomHeader {
     listenElement.addEventListener('click', () => {
       clickElement.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: false }));
     });
-    listenElement.addEventListener('tap', () => {
-      clickElement.dispatchEvent(new MouseEvent('tap', { bubbles: false, cancelable: false }));
-    });
+    // listenElement.addEventListener('tap', () => {
+    //   clickElement.dispatchEvent(new MouseEvent('tap', { bubbles: false, cancelable: false }));
+    // });
   }
 }

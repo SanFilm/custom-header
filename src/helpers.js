@@ -1,9 +1,6 @@
 import { defaultVariables } from './template-variables';
+import { getLovelace } from 'custom-card-helpers';
 import { ha_elements } from './ha-elements';
-
-const haElem = ha_elements();
-const lovelace = haElem.lovelace;
-const hass = haElem.hass;
 
 Object.defineProperty(Array.prototype, 'flat', {
   value: function(depth = 1) {
@@ -24,6 +21,8 @@ export const tapOrClick = (listenElement, clickElement) => {
 
 // Get tab index number from view's title or path
 export const tabIndexByName = tab => {
+  const lovelace = getLovelace();
+  if (!lovelace) return;
   let index;
   const { views } = lovelace.config;
   if (isNaN(tab)) {
@@ -40,13 +39,14 @@ export const tabIndexByName = tab => {
 export const invertNumArray = show_tabs => {
   if (show_tabs && show_tabs.length) {
     const total_tabs = [];
-    for (let i = 0; i < haElem.tabs.length; i += 1) total_tabs.push(i);
+    for (let i = 0; i < ha_elements().tabs.length; i += 1) total_tabs.push(i);
     return total_tabs.filter(el => !show_tabs.includes(el));
   }
 };
 
 // Subscribe and render Jinja templates.
 export const subscribeRenderTemplate = (onChange, params, locale) => {
+  const hass = ha_elements().hass;
   const conn = hass.connection;
   const variables = {
     user: hass.user.name,

@@ -1,16 +1,15 @@
 import { getLovelace } from 'custom-card-helpers';
 
-const lovelace = getLovelace();
-
 const getThemeVar = themeVar => {
   return getComputedStyle(document.body).getPropertyValue(themeVar);
 };
 
 export const defaultConfig = () => {
+  if (!getLovelace()) return;
   return {
     // Main config
     locale: [],
-    header_text: lovelace.config.title || 'Home Assistant',
+    header_text: getLovelace().config.title || 'Home Assistant',
     disabled_mode: false,
     kiosk_mode: false,
     compact_mode: false,
@@ -55,6 +54,7 @@ export const defaultConfig = () => {
     voice_dropdown: false,
     voice_hide: false,
     options_hide: false,
+    button_scroll: false,
 
     // Overflow menu items
     hide_help: false,
@@ -63,6 +63,7 @@ export const defaultConfig = () => {
     hide_config: false,
     hide_raw: false,
     hide_ch_settings: false,
+    hide_reload_resources: false,
 
     // Custom CSS
     tabs_css: [],

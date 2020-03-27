@@ -2,17 +2,21 @@ import { hideMenuItems } from './overflow-menu';
 import { insertStyleTags } from './style-tags';
 import { redirects } from './redirects';
 import { getLovelace } from 'custom-card-helpers';
-import { fireEvent } from 'custom-card-helpers';
 import { CustomHeaderConfig } from './config';
 
 export const selectTab = (config, ch) => {
-  if (getLovelace() == null) return;
+  const headerType = config.compact_mode || config.button_scroll ? ch.header : ch.footer;
   const lovelace = getLovelace();
-  if (!lovelace.current_view) return;
-  if (haElem.tabContainer && ch.header.tabContainer) {
-    ch.header.tabs[lovelace.current_view].dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: false }));
-    ch.footer.tabs[lovelace.current_view].dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: false }));
-    fireEvent(ch.header.container, 'iron-resize');
+  if (!lovelace) return;
+  const haActiveTabIndex = lovelace.current_view;
+  headerType.tabContainer.setAttribute('selected', haActiveTabIndex);
+  if (!headerType.tabs[haActiveTabIndex]) return;
+  const tab = headerType.tabs[haActiveTabIndex].getBoundingClientRect();
+  const container = headerType.tabContainer.shadowRoot.querySelector('#tabsContainer').getBoundingClientRect();
+  if (container.right < tab.right || container.left > tab.left) {
+    headerType.tabContainer._scrollToLeft();
+    headerType.tabContainer._scrollToRight();
+    headerType.tabs[haActiveTabIndex].dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: false }));
   }
 };
 
@@ -22,15 +26,15 @@ export const observers = (config, ch, haElem) => {
     mutations.forEach(({ addedNodes, target }) => {
       if (mutations.length && mutations[0].target.nodeName == 'HTML') {
         window.customHeaderExceptionConfig = 'init';
-        CustomHeaderConfig.buildConfig();
+        CustomHeaderConfig.buildConfig(ch);
         mutations = [];
       }
       if (target.id == 'view' && addedNodes.length && headerType.tabs.length) {
         // Navigating to new tab/view.
         if (haElem.root.querySelector('app-toolbar').className != 'edit-mode') {
-          redirects(config, ch.header);
-          // selectTab(config, ch);
-          CustomHeaderConfig.buildConfig();
+          redirects(config, ch);
+          selectTab(config, ch);
+          CustomHeaderConfig.buildConfig(ch);
         }
       } else if (addedNodes.length && target.nodeName == 'PARTIAL-PANEL-RESOLVER') {
         // When returning to lovelace/overview from elsewhere in HA.
@@ -41,9 +45,7 @@ export const observers = (config, ch, haElem) => {
             }
             window.customHeaderObservers = [];
           }
-          window.setTimeout(() => {
-            CustomHeaderConfig.buildConfig(addedNodes[0].lovelace);
-          }, 2000);
+          CustomHeaderConfig.buildConfig(ch, addedNodes[0].lovelace);
         }
         if (haElem.main.querySelector('ha-panel-lovelace')) {
           if (config.compact_mode && !config.footer_mode) {
@@ -67,8 +69,11 @@ export const observers = (config, ch, haElem) => {
         if (haElem.root.querySelector('editor')) haElem.root.querySelector('editor').remove();
       } else if (target.className === 'edit-mode' && addedNodes.length) {
         // Entered edit mode.
+        const menu_clone = ch.header.menu.cloneNode(true);
+        ch.header.menu.parentNode.replaceChild(menu_clone, ch.header.menu);
+        ch.header.menu = ch.header.container.querySelector("[buttonelem='menu']");
         if (haElem.root.querySelector('editor')) haElem.root.querySelector('editor').remove();
-        if (!window.customHeaderDisabled) hideMenuItems(config, ch.header, true);
+        if (!window.customHeaderDisabled) hideMenuItems(config, ch.header, true, haElem);
         ch.header.menu.style.display = 'none';
         haElem.root.querySelector('ch-header').style.display = 'none';
         haElem.root.querySelector('ch-footer').style.display = 'none';
@@ -78,8 +83,13 @@ export const observers = (config, ch, haElem) => {
         if (haElem.root.querySelector('#ch_animated')) haElem.root.querySelector('#ch_animated').remove();
       } else if (target.nodeName === 'APP-HEADER' && addedNodes.length) {
         // Exited edit mode.
-        insertStyleTags(config, ch);
+        insertStyleTags(config, ch, haElem);
         haElem.menu = haElem.appHeader.querySelector('ha-menu-button');
+        ch.header.menu.addEventListener('click', () => {
+          haElem.menu.shadowRoot
+            .querySelector('paper-icon-button')
+            .dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: false }));
+        });
         haElem.appHeader.style.display = 'none';
         ch.header.menu.style.display = '';
         haElem.root.querySelector('ch-header').style.display = '';

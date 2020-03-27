@@ -5,8 +5,6 @@ import { ha_elements } from './ha-elements';
 import { localize } from './localize/localize';
 import { deviceID } from './template-variables';
 
-const hass = ha_elements().hass;
-
 export class CustomHeaderEditor extends LitElement {
   static get properties() {
     return { _config: {} };
@@ -15,6 +13,7 @@ export class CustomHeaderEditor extends LitElement {
   firstUpdated() {
     this.defaultConfig = defaultConfig();
     this._lovelace = getLovelace();
+    this.hass = ha_elements().hass;
     this.deepcopy = this.deepcopy.bind(this);
     this._config = this._lovelace.config.custom_header ? this.deepcopy(this._lovelace.config.custom_header) : {};
   }
@@ -52,8 +51,8 @@ export class CustomHeaderEditor extends LitElement {
       <mwc-button @click="${this._addException}">${localize('editor.add_exception')}</mwc-button>
       <h4 class="underline">${localize('editor.current_user')}</h4>
       <br />
-      <b>Name:</b> ${hass.user.name}<br />
-      <b>ID:</b> ${hass.user.id}
+      <b>Name:</b> ${this.hass.user.name}<br />
+      <b>ID:</b> ${this.hass.user.id}
       <h4 class="underline">Device ID</h4>
       <br />
       ${deviceID}

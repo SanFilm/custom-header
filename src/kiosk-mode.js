@@ -1,12 +1,8 @@
 import { tabIndexByName } from './helpers';
-import { ha_elements } from './ha-elements';
-
-const haElem = ha_elements();
-const root = haElem.root;
 
 // Kiosk mode is used to hide sidebar only as well.
-export const kioskMode = (sidebarOnly, headerOnly, config) => {
-  if (window.location.href.includes('disable_ch')) return;
+export const kioskMode = (haElem, sidebarOnly, headerOnly, config) => {
+  if (window.location.href.includes('disable_ch') || window.customHeaderDisabled) return;
 
   // Kiosk mode styling.
   let style = document.createElement('style');
@@ -23,7 +19,7 @@ export const kioskMode = (sidebarOnly, headerOnly, config) => {
         ch-header {
           display: none;
         }
-        ch-header-bottom {
+        ch-footer {
           display: none;
         }
         app-header {
@@ -40,9 +36,9 @@ export const kioskMode = (sidebarOnly, headerOnly, config) => {
   }
 
   // Add updated styles only if changed.
-  const oldStyle = root.querySelector('#ch_header_style');
+  const oldStyle = haElem.root.querySelector('#ch_header_style');
   if (!oldStyle || oldStyle.innerText != style.innerHTML) {
-    root.appendChild(style);
+    haElem.root.appendChild(style);
     if (oldStyle) oldStyle.remove();
   }
 
@@ -65,19 +61,19 @@ export const kioskMode = (sidebarOnly, headerOnly, config) => {
       style = document.createElement('style');
       style.setAttribute('id', 'ch_sidebar_style');
       style.innerHTML = ':host(:not([expanded])) {width: 0px !important;}';
-      haElem.sidebar.main.shadowRoot.appendChild(style);
+      haElem.sidebar.main.appendChild(style);
     }
     if (!haElem.main.querySelector('#ch_sidebar_style')) {
       style = document.createElement('style');
       style.setAttribute('id', 'ch_sidebar_style');
       style.innerHTML = ':host {--app-drawer-width: 0px !important;}';
-      haElem.main.shadowRoot.appendChild(style);
+      haElem.main.appendChild(style);
     }
   }
   window.dispatchEvent(new Event('resize'));
 };
 
-export const removeKioskMode = () => {
+export const removeKioskMode = haElem => {
   haElem.drawer.style.display = '';
   let style = haElem.main.querySelector('#ch_sidebar_style');
   if (style) style.remove();

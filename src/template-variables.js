@@ -1,8 +1,6 @@
 import { ha_elements } from './ha-elements';
 import { getLovelace } from 'custom-card-helpers';
 
-const hass = ha_elements().hass;
-
 // deviceID taken directly from https://github.com/thomasloven/lovelace-card-tools
 const _deviceID = () => {
   const ID_STORAGE_KEY = 'lovelace-player-device-id';
@@ -21,6 +19,7 @@ const _deviceID = () => {
 export let deviceID = _deviceID();
 
 export const defaultVariables = locale => {
+  const hass = ha_elements().hass;
   const lovelace = getLovelace();
   const d = new Date();
   if (!lovelace || lovelace.config.views[lovelace.current_view] == undefined) return;
